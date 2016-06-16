@@ -1,36 +1,52 @@
 require_dependency 'issue'
 require_dependency 'issue_status'
+require_dependency 'project'
 
-module IssueStatusPatch
+require 'net/http'
 
-  def resolved?
-    name == 'Resolved'
+class String
+
+  def strip_non_alpabets
+    sub(/[^\w]/, '')
+  end
+
+end
+
+class Project
+
+  def supports_continuous_deployment?
+    Setting.plugin_continuous_deployment[:target_project_names].include?(name)
   end
 
 end
 
 module IssuePatch
 
-  def being_resolved?
-    status.present? && status.resolved? && !status_was.resolved?
+  def status_being_changed?
+    status.id != status_was.id
   end
 
   def post_update
-    if project.name == 'candidate' and being_resolved?
-      uri = URI("http://localhost:8001/redmine_response/")
+    if project.supports_continuous_deployment? and status_being_changed?
+      project_settings = Setting.plugin_continuous_deployment[project.name.to_sym]
 
-      request = Net::HTTP::Get.new(uri)
+      uri = URI(project_settings[:deployment_server_url])
 
-      response = Net::HTTP.start(uri.hostname, uri.port) {|http| http.request(request)}
+      uri.query = URI.encode_www_form(
+        attributes.merge(extra_issue_attributes).merge(project_settings[:default_request_params])
+      )
+
+      Net::HTTP.get_response(uri)
     end
   end
-end
 
-
-class IssueStatus
-
-  include IssueStatusPatch
-
+  def extra_issue_attributes
+    {
+      issue_id: id,
+      initial_status: status_was.name.strip_non_alpabets.downcase,
+      final_status: status.name.strip_non_alpabets.downcase,
+    }
+  end
 end
 
 class Issue
