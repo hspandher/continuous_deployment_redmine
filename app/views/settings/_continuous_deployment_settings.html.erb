@@ -1,0 +1,41 @@
+<h3>Target Project Names</h3>
+<% Project.all.map do |project| %>
+    <p>
+        <label for="<%= project.name %>"><%= project.name %></label>
+        <input type="checkbox" id="project_<%= project.name %>" name="settings[:target_project_names][]" value="<%= project.name %>"/>
+    </p>
+
+    <div id="<%= project.name %>_content">
+    </div>
+<% end %>
+
+<script>
+    $(document).ready(function(){
+        <% Project.all.map do |project| %>
+            $("#project_<%= project.name %>").click(function(){
+                if($(this).is(':checked')){
+                    var html = '<p>\
+                                <label><%= project.name %> deployment server url</label>\
+                                <input type="text" name="settings[:<%= project.name %>][:deployment_server_url]"/>\
+                            </p>\
+
+                            <h3>Extra default parameters</h3>
+
+                            <div type="button" id="<%= project.name %>_add_param">
+                            <p>\
+                                 <label><%= project.name %> parameter name</label>\
+                                <input type="text" name=""/>\
+                            </p>\
+                            <p>\
+                            <label><%= project.name %> parameter value</label>\
+                            <input type="text" name=""/>\
+                            </p>'
+
+                    $("#<%= project.name %>_content").append(html)
+                } else {
+                    $("#<%= project.name %>_content").html("")
+                }
+            })
+        <% end %>
+    })
+</script>
