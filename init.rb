@@ -10,9 +10,9 @@ Redmine::Plugin.register :continuous_deployment do
   settings default: {
       target_project_names: ['candidate'],
       candidate: {
-        deployment_server_url: "http://localhost:8001/redmine_response/",
+        deployment_server_url: "http://hspandher:67ce59d90c9c3e3b47cd83d9b80684a0@localhost:8080/job/quality_assurance/buildWithParameters",
         default_request_params: {
-          auth_token: '343424324324'
+          token: 'aHNwYW5kaGVy'
         }
       }
     },
