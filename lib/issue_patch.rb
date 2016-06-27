@@ -36,7 +36,7 @@ module IssuePatch
         attributes.merge(extra_issue_attributes).merge(project_settings[:default_request_params])
       )
 
-      Net::HTTP.get_response(uri)
+      Net::HTTP.post_form(uri, {})
     end
   end
 
